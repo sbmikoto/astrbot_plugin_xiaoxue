@@ -1,0 +1,138 @@
+import uuid
+import aiohttp
+import json
+import os
+from astrbot.api.event import MessageChain
+from ..utils.utils import get_workflow_settings, create_workflow, get_config
+
+class Call_Comfy:
+    CLIENT_ID = str(uuid.uuid4())
+    SERVER_URL = get_config().get('comfy').get('url_header') + "://" + get_config().get('comfy').get('server_domain')
+    WS_HEADER = "ws" if get_config().get('comfy').get('url_header') == "http" else "wss"
+    SERVER_WS_URL = WS_HEADER + "://" + get_config().get('comfy').get('server_domain')
+    OUTPUT_IMAGE_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data/output")
+
+    async def generate_image(self, info, astr_self, unified_msg_origin):
+        workflow_setting = get_workflow_settings("test")
+        promptWorkflow = create_workflow(workflow_setting, info)
+        queued_prompt_info = await self.queue_prompt(promptWorkflow)
+        prompt_id = queued_prompt_info["prompt_id"]
+        image_file = await self.track_progress_and_get_images(prompt_id)
+        message_chain = MessageChain().message(f" 图片好了喵 \n提示词: {info['prompt']}\nCFG: {info['cfg']}\n模型: {info['model']}").file_image(image_file)
+        await astr_self.context.send_message(unified_msg_origin, message_chain)
+
+
+    async def queue_prompt(self, workflow):
+        payload = {
+            "prompt": workflow,
+            "client_id": self.CLIENT_ID
+        }
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(f"{self.SERVER_URL}/prompt", json=payload) as response:
+                response_data = await response.json()
+                status_code = response.status
+                if response_data:
+                    if "prompt_id" in response_data:
+                        print(f"工作流程已成功提交! Prompt ID: {response_data['prompt_id']}")
+                        return response_data
+    
+    async def get_history(self, prompt_id):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"{self.SERVER_URL}/history/{prompt_id}") as response:
+                if response.status == 200:
+                    history_data = await response.json()
+                    return history_data
+                
+    async def get_image(self, filename, subfolder, folder_type):
+        params = {"filename": filename, "subfolder": subfolder, "type": folder_type}
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"{self.SERVER_URL}/view", params=params) as response:
+                if response.status == 200:
+                    return await response.read()
+
+
+    async def track_progress_and_get_images(self, prompt_id):
+
+        ws_url = f"{self.SERVER_WS_URL}/ws?clientId={self.CLIENT_ID}"
+
+        output_images_details = []
+        prompt_done = False #暂时没用
+
+        async with aiohttp.ClientSession() as session:
+            async with session.ws_connect(ws_url) as ws:
+                async for msg in ws:
+                    if msg.type == aiohttp.WSMsgType.TEXT:
+                              
+                        message_data = json.loads(msg.data)
+                        if "type" in message_data:
+                            msg_type = message_data["type"]
+                            data = message_data.get("data", {})
+
+                            if msg_type == "status":
+                                queue_remaining = data.get("status", {}).get("execinfo", {}).get("queue_remaining", 0)
+                                print(f"队列状态更新: 剩余任务 {queue_remaining}")
+                                if queue_remaining == 0 and data.get("status", {}).get("execinfo", {}).get("prompt_id") == prompt_id:
+                                    pass
+
+                            elif msg_type == "execution_start":
+                                if data.get("prompt_id") == prompt_id:
+                                    print(f"Prompt {prompt_id} 开始执行...")
+
+                            elif msg_type == "execution_cached":
+                                if data.get("prompt_id") == prompt_id:
+                                    print(f"Prompt {prompt_id} 的结果从缓存加载。节点: {data.get('nodes')}")
+
+                            elif msg_type == "executing":
+                                current_prompt_id = data.get("prompt_id")
+                                node_id = data.get("node")
+                                if current_prompt_id == prompt_id:
+                                    if node_id is None:
+                                        print(f"Prompt {prompt_id} 执行完成。")
+                                        prompt_done = True
+                                        break # 我们的 prompt 执行完毕
+                                    else:
+                                        pass
+
+                            elif msg_type == "executed":
+                                if data.get("prompt_id") == prompt_id:
+                                    node_id = data.get("node")
+                                    outputs = data.get("output", {}).get("images", [])
+                                    print(f"Prompt {prompt_id} 节点 {node_id} 执行完毕。输出图片数量: {len(outputs)}")
+                                    for img_detail in outputs:
+                                        output_images_details.append(img_detail)
+                                        print(f"  找到图片: {img_detail.get('filename')}")
+
+                    elif msg.type == aiohttp.WSMsgType.ERROR:
+                        print(f"WebSocket 连接错误: {ws.exception()}")
+                        break
+                    elif msg.type == aiohttp.WSMsgType.CLOSED:
+                        print("WebSocket 连接已关闭。")
+                        break
+
+        history = await self.get_history(prompt_id)
+        if history and prompt_id in history:
+            final_images_to_fetch = []
+            prompt_outputs = history[prompt_id].get("outputs", {})
+
+            for node_id, node_output in prompt_outputs.items():
+                #print(node_output)
+                if "images" in node_output:
+                    for img_info in node_output["images"]:
+                        print(f"从历史记录中找到图片: 节点 {node_id}, 文件名 {img_info.get('filename')}")
+                        if img_info not in final_images_to_fetch: # 避免重复
+                            final_images_to_fetch.append(img_info)
+        
+                    for img_detail in final_images_to_fetch:
+                        img_data = await self.get_image(
+                            img_detail["filename"],
+                            img_detail.get("subfolder", ""), # subfolder 可能不存在
+                            img_detail["type"]
+                        )
+                        if img_data:
+                            file_path = os.path.join(self.OUTPUT_IMAGE_FILE_PATH, img_detail["filename"])
+                            with open(file_path, "wb") as f:
+                                f.write(img_data)
+                            print(f"图片已保存到: {file_path}")
+                            #目前只处理第一张
+                            return file_path

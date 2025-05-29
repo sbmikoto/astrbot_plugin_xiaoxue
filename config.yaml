@@ -1,0 +1,8 @@
+comfy:
+  url_header: "http"
+  server_domain: "10.10.10.10:3333" #填写你的comfy服务器,ip:端口
+
+# safetensors我写死在代码里了
+comfy_model:
+  default_model: "oneObsession_13" #默认使用的模型
+  models: ["oneObsession_13", "IL One obsession_MatureEPSv3-A"] #可以使用的模型列表
