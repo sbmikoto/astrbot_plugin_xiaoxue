@@ -1,0 +1,276 @@
+{
+  "2": {
+    "inputs": {
+      "ckpt_name": "oneObsession_07Noob.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Checkpoint加载器（简易）"
+    }
+  },
+  "3": {
+    "inputs": {
+      "stop_at_clip_layer": -2,
+      "clip": [
+        "2",
+        1
+      ]
+    },
+    "class_type": "CLIPSetLastLayer",
+    "_meta": {
+      "title": "设置CLIP最后一层"
+    }
+  },
+  "4": {
+    "inputs": {
+      "width": 1024,
+      "height": 1536,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "空Latent图像"
+    }
+  },
+  "6": {
+    "inputs": {
+      "text": "1girl",
+      "parser": "A1111",
+      "mean_normalization": true,
+      "multi_conditioning": true,
+      "use_old_emphasis_implementation": false,
+      "with_SDXL": false,
+      "ascore": 6.000000000000001,
+      "width": 1024,
+      "height": 1024,
+      "crop_w": 0,
+      "crop_h": 0,
+      "target_width": 1024,
+      "target_height": 1024,
+      "text_g": "",
+      "text_l": "",
+      "smZ_steps": 1,
+      "clip": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "smZ CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode++"
+    }
+  },
+  "7": {
+    "inputs": {
+      "text": "lowres, bad quality, low quality,worst quality,normal quality,text,signature,jpeg artifacts,bad anatomy, old, oldest, furry, early,copyright name,watermark,artist name,signature, mammal, anthro, ambiguous form, feral, semi-anthro,",
+      "parser": "A1111",
+      "mean_normalization": true,
+      "multi_conditioning": true,
+      "use_old_emphasis_implementation": false,
+      "with_SDXL": false,
+      "ascore": 6.000000000000001,
+      "width": 1024,
+      "height": 1024,
+      "crop_w": 0,
+      "crop_h": 0,
+      "target_width": 1024,
+      "target_height": 1024,
+      "text_g": "",
+      "text_l": "",
+      "smZ_steps": 1,
+      "clip": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "smZ CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode++"
+    }
+  },
+  "8": {
+    "inputs": {
+      "seed": 946786828485267,
+      "steps": 28,
+      "cfg": 5,
+      "sampler_name": "euler_ancestral",
+      "scheduler": "normal",
+      "denoise": 1,
+      "model": [
+        "2",
+        0
+      ],
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ],
+      "latent_image": [
+        "4",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "K采样器"
+    }
+  },
+  "9": {
+    "inputs": {
+      "samples": [
+        "8",
+        0
+      ],
+      "vae": [
+        "2",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE解码"
+    }
+  },
+  "52": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "60",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "保存图像"
+    }
+  },
+  "53": {
+    "inputs": {
+      "model_name": "4x-AnimeSharp.pth"
+    },
+    "class_type": "UpscaleModelLoader",
+    "_meta": {
+      "title": "拡大モデルを読み込む"
+    }
+  },
+  "54": {
+    "inputs": {
+      "upscale_model": [
+        "53",
+        0
+      ],
+      "image": [
+        "9",
+        0
+      ]
+    },
+    "class_type": "ImageUpscaleWithModel",
+    "_meta": {
+      "title": "モデルを使用して画像を拡大"
+    }
+  },
+  "55": {
+    "inputs": {
+      "upscale_method": "area",
+      "scale_by": 0.33000000000000007,
+      "image": [
+        "54",
+        0
+      ]
+    },
+    "class_type": "ImageScaleBy",
+    "_meta": {
+      "title": "画像を拡大（指定サイズ）"
+    }
+  },
+  "56": {
+    "inputs": {
+      "pixels": [
+        "55",
+        0
+      ],
+      "vae": [
+        "2",
+        2
+      ]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "VAEエンコード"
+    }
+  },
+  "57": {
+    "inputs": {
+      "add_noise": true,
+      "noise_seed": 158391630805491,
+      "cfg": 5,
+      "model": [
+        "2",
+        0
+      ],
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ],
+      "sampler": [
+        "58",
+        0
+      ],
+      "sigmas": [
+        "59",
+        0
+      ],
+      "latent_image": [
+        "56",
+        0
+      ]
+    },
+    "class_type": "SamplerCustom",
+    "_meta": {
+      "title": "カスタムサンプラー"
+    }
+  },
+  "58": {
+    "inputs": {
+      "sampler_name": "er_sde"
+    },
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "Kサンプラー選択"
+    }
+  },
+  "59": {
+    "inputs": {
+      "model_type": "SDXL",
+      "steps": 12,
+      "denoise": 0.6000000000000001
+    },
+    "class_type": "AlignYourStepsScheduler",
+    "_meta": {
+      "title": "ステップを整列"
+    }
+  },
+  "60": {
+    "inputs": {
+      "samples": [
+        "57",
+        0
+      ],
+      "vae": [
+        "2",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAEデコード"
+    }
+  }
+}

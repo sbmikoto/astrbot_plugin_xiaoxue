@@ -3,24 +3,79 @@ import aiohttp
 import json
 import os
 from astrbot.api.event import MessageChain
-from ..utils.utils import get_workflow_settings, create_workflow, get_config
+from ..utils.utils import get_workflow_settings, create_workflow, get_config_section, evaluate_custom_rule
 
 class Call_Comfy:
     CLIENT_ID = str(uuid.uuid4())
-    SERVER_URL = get_config().get('comfy').get('url_header') + "://" + get_config().get('comfy').get('server_domain')
-    WS_HEADER = "ws" if get_config().get('comfy').get('url_header') == "http" else "wss"
-    SERVER_WS_URL = WS_HEADER + "://" + get_config().get('comfy').get('server_domain')
+    SERVER_URL = get_config_section('comfy').get('url_header') + "://" + get_config_section('comfy').get('server_domain')
+    WS_HEADER = "ws" if get_config_section('comfy').get('url_header') == "http" else "wss"
+    SERVER_WS_URL = WS_HEADER + "://" + get_config_section('comfy').get('server_domain')
     OUTPUT_IMAGE_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data/output")
+    DEFAULT_WORKFLOW = get_config_section('comfy').get('default_workflow')
 
     async def generate_image(self, info, astr_self, unified_msg_origin):
-        workflow_setting = get_workflow_settings("test")
+        workflow_setting = get_workflow_settings(self.get_workflow(info))
+        model_name = info.get("model")
+        if model_name:
+            info["model"] = model_name + "." + self.get_model_fullname(model_name)
         promptWorkflow = create_workflow(workflow_setting, info)
         queued_prompt_info = await self.queue_prompt(promptWorkflow)
         prompt_id = queued_prompt_info["prompt_id"]
         image_file = await self.track_progress_and_get_images(prompt_id)
-        message_chain = MessageChain().message(f" 图片好了喵 \n提示词: {info['prompt']}\nCFG: {info['cfg']}\n模型: {info['model']}").file_image(image_file)
+
+        complete_msg_setting = get_config_section('messages').get('complete_message')
+        complete_msg = " 图片完成 \n"
+        if complete_msg_setting:
+            complete_msg_base = complete_msg_setting.get("base_string")
+            if complete_msg_base:
+                complete_msg = complete_msg_base + "\n"
+                addition = complete_msg_setting.get("addtion")
+                if addition:
+                    for key, value in addition.items():
+                        info_value = info.get(key)
+                        if info_value:
+                            complete_msg = complete_msg + value + str(info_value) + "\n"
+
+        message_chain = MessageChain().message(complete_msg).file_image(image_file)
         await astr_self.context.send_message(unified_msg_origin, message_chain)
 
+    def get_workflow(self, info):
+        workflow = self.DEFAULT_WORKFLOW
+
+        #取得工作流设定
+        workflow_settings = get_config_section("switch_workflow")
+        if workflow_settings:
+            for workflow_setting in workflow_settings:
+                workflow_name = workflow_setting.get("workflow_name")
+                if not workflow_name:
+                    pass
+                check = False
+                workflow_models = workflow_setting.get("model")
+                model_name = info.get("model")
+                if workflow_models and model_name:
+                    workflow_models_split = workflow_models.split(",")
+                    if model_name in workflow_models_split:
+                        check = True
+                workflow_param_rule = workflow_setting.get("param_rule")
+                if workflow_param_rule:
+                    try:
+                        check = evaluate_custom_rule(workflow_param_rule, info)
+                    except Exception as e:
+                        print(f"规则判断发生错误: {e}")
+                        check = False
+                
+                if check:
+                    workflow = workflow_name
+
+        return workflow
+    
+    def get_model_fullname(self, model: str):
+        config_models = get_config_section("comfy_models")
+        for config_model in config_models:
+            if config_model["name"] == model:
+                type = config_model.get("type") if config_model.get("type") else "safetensors"
+                return type
+        return "safetensors"
 
     async def queue_prompt(self, workflow):
         payload = {
