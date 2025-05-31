@@ -2,6 +2,9 @@ import uuid
 import aiohttp
 import json
 import os
+import io
+import ssl
+import certifi
 from astrbot.api.event import MessageChain
 from ..utils.utils import get_workflow_settings, create_workflow, get_config_section, evaluate_custom_rule
 
@@ -14,6 +17,12 @@ class Call_Comfy:
     DEFAULT_WORKFLOW = get_config_section('comfy').get('default_workflow')
 
     async def generate_image(self, info, astr_self, unified_msg_origin):
+        image_url = info.get("send_image")
+        if image_url:
+            image_filename = info.get("send_image_key") + ".png"
+            await self.upload_image(image_url, image_filename)
+            del info["send_image_key"]
+            info["send_image"] = image_filename
         workflow_setting = get_workflow_settings(self.get_workflow(info))
         model_name = info.get("model")
         if model_name:
@@ -38,6 +47,56 @@ class Call_Comfy:
 
         message_chain = MessageChain().message(complete_msg).file_image(image_file)
         await astr_self.context.send_message(unified_msg_origin, message_chain)
+
+    async def upload_image(self, image_url, filename):
+        image_content = None
+        content_type = 'image/png'
+        image_url = image_url.replace("https://", "http://")
+        try:
+            #下载图片
+            ssl_context_download = ssl.create_default_context(cafile=certifi.where())
+            connector_download = aiohttp.TCPConnector(ssl=ssl_context_download)
+            async with aiohttp.ClientSession(connector=connector_download, trust_env=True) as session_download:
+                async with session_download.get(image_url) as resp_download:
+                    resp_download.raise_for_status()
+                    image_content = await resp_download.read()
+                    content_type = resp_download.headers.get('Content-Type', 'image/png')
+
+        except (aiohttp.ClientConnectorSSLError, aiohttp.ClientConnectorCertificateError) as ssl_error:
+            async with aiohttp.ClientSession(trust_env=True) as session_download_fallback:
+                async with session_download_fallback.get(image_url, ssl=False) as resp_download_fallback: # ssl=False 禁用SSL验证
+                    resp_download_fallback.raise_for_status()
+                    image_content = await resp_download_fallback.read()
+                    content_type = resp_download_fallback.headers.get('Content-Type', 'image/png')
+        except aiohttp.ClientResponseError as http_error: # 处理下载时的HTTP错误
+            print(f"图片下载失败 (HTTP错误): {http_error.status} {http_error.message} 从 {image_url}")
+            raise http_error
+        except Exception as e: # 其他下载错误
+            print(f"图片下载时发生未知错误: {e} 从 {image_url}")
+            raise e
+        
+        if image_content is None:
+            raise ValueError(f"无法从 {image_url} 下载图片内容")
+        
+        #上传到comfy
+        try:
+            upload_url = f"{self.SERVER_URL}/upload/image"
+            form_data = aiohttp.FormData()
+            form_data.add_field(
+                'image',
+                io.BytesIO(image_content), # 将bytes包装在BytesIO中
+                filename=filename,
+                content_type=content_type
+            )
+            form_data.add_field('overwrite', 'true')
+
+            async with aiohttp.ClientSession(trust_env=True) as session_upload:
+                async with session_upload.post(upload_url, data=form_data) as resp_upload:
+                    resp_upload.raise_for_status()
+
+        except Exception as error:
+            print(f'图片上传失败: {error}')
+            raise error
 
     def get_workflow(self, info):
         workflow = self.DEFAULT_WORKFLOW

@@ -1,6 +1,9 @@
+system:
+  image_to_image: True #有图生图需求请一定要设定为True
+
 comfy:
   url_header: "http"                    #协议类型 http or https
-  server_domain: "10.10.10.10:5000"   #你的comfy服务器,ip:端口
+  server_domain: "IP地址:端口"   #你的comfy服务器,ip:端口,例子: 10.10.10.10:5000
   default_workflow: "test"              #默认使用的工作流
 
 # 设定画图开始和完成发送的消息，可修改内容。
@@ -19,9 +22,12 @@ comfy_models:
     type: "safetensors"               #后缀名
   - name: "IL One obsession_MatureEPSv3-A"
     type: "safetensors"
+  - name: "catTowerNoobaiXL_v17Vpred"
+    type: "safetensors"
       
 #机器人传入参数的设定，可以根据自己的需求更改。type的类型只能是int,float,str,bool
 #强烈建议设定初始值，AI有时候会丢值，不设定可能导致问题
+#因为python的规则，从设置了default值开始的参数，下面都必须设置default，搞不懂就全部设置default
 parameters: 
   - name: "model"
     type: "str"
@@ -30,6 +36,7 @@ parameters:
   - name: "prompt"
     type: "str"
     description: "需要把用户的需求翻译成danbooru的tag形式，要选用danbooru.donmai.us里存在的tag，作为输入参数。需要注意，tag不需要带下划线，并且需要保留\\符号"
+    default: "1girl"
   - name: "width"
     type: "int"
     description: "根据图片需求设定合适的宽度，范围是768-1536, 用户可以自定义。"
@@ -50,6 +57,11 @@ parameters:
     type: "int"
     description: "默认为1,根据用户的需求，按照['默认':1,'修脸':2]进行设定"
     default: 1
+  - name: "isItoi"
+    type: "bool"
+    description: "默认为False,只有当用户明确表达需要用图片生成图片的时候才能设定为True"
+    with_image: True #当设定值和参数值相等的时候，就会被判定需要图片，会把图片传入工作流，在工作流设定中input_param请用"send_image"字段
+    default: False
 
 #如果你有多个工作流，就必须在这里设定切换规则，目前只支持模型和参数设定规则。
 #判断逻辑是从上到下，满足匹配条件就会停止，所以请注意设定顺序！
@@ -58,7 +70,8 @@ switch_workflow:
     model: "catTowerNoobaiXL_v17Vpred"  #多个模型用逗号隔开
   - workflow_name: "test_hires"
     param_rule: "isHires"           #当把参数作为条件的时候，只写参数名，当参数为True或者有值时会切换工作流。写"参数名,值"，会判断当参数等于值的时切换
-  - workflow_name: "test_hires_ad"  #这是模型和参数一起写的例子，会同时满足才会切换。值的内部可以用||(或)和&&(且)以及括号进行逻辑连接，别写其他的！
+  - workflow_name: "test_hires_ad"  #这是模型和参数一起写的例子，会同时满足才会切换。值的内部可以用||(或)和&&(且)进行连接，别写其他的！
     model: "oneObsession_13,IL One obsession_MatureEPSv3-A"  #多个模型的例子
     param_rule: "type,2&&isHires"
-    
+  - workflow_name: "test_depth"
+    param_rule: "isItoi"

@@ -7,6 +7,14 @@ import re
 CONFIG_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data/workflow/workflow_setting.json")
 config = None
 
+IMAGE_SESSION = {}
+
+def save_to_image_session(url: str, key: str):
+    IMAGE_SESSION[key] = url
+
+def get_from_image_session(key):
+    return IMAGE_SESSION.get(key)
+
 def get_config():
     global config
     if not config:
