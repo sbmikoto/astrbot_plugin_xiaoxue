@@ -14,7 +14,7 @@ sample文件夹下有更复杂的配置例子。(sample中的工作流有使用c
   插件的基础配置文件，里面有各个项目的说明。  
   搞不懂的话，可以只配置server_domain和parameters的model参数。  
 
-- workflow_setting.json  
+- workflow_setting.json(data/workflow文件夹下)  
   配置传入参数和工作流节点配对的设定文件，搞不懂就用默认的。  
   结构是这样的  
   {  
