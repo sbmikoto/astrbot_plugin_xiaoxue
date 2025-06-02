@@ -10,6 +10,7 @@
 sample文件夹下有更复杂的配置例子。(sample中的工作流有使用custom node，请自行安装到comfyui)  
 
 插件需要手动配置，并重启生效  
+在"/AstrBot/data/plugins/astrbot_plugin_xiaoxue"里找到配置文件并修改
 - config.yaml  
   插件的基础配置文件，里面有各个项目的说明。  
   搞不懂的话，可以只配置server_domain和parameters的model参数。  
