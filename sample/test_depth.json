@@ -149,7 +149,7 @@
   },
   "53": {
     "inputs": {
-      "image": "ComfyUI_4882.png"
+      "image": "test.png"
     },
     "class_type": "LoadImage",
     "_meta": {

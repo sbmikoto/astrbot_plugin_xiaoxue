@@ -3,194 +3,34 @@
         "file":"test",
         "node_mapping":[
             {
-                "node_number": "2",
+                "node_number": "1",
                 "node_property": "ckpt_name",
                 "input_param": "model"
             },
             {
-                "node_number": "4",
+                "node_number": "3",
+                "node_property": "text",
+                "input_param": "prompt"
+            },
+            {
+                "node_number": "5",
                 "node_property": "width",
                 "input_param": "width"
             },
             {
-                "node_number": "4",
+                "node_number": "5",
                 "node_property": "height",
                 "input_param": "height"
             },
             {
                 "node_number": "6",
-                "node_property": "text",
-                "input_param": "prompt"
-            },
-            {
-                "node_number": "8",
                 "node_property": "seed",
                 "input_param": "random_seed"
-            },
-            {
-                "node_number": "8",
-                "node_property": "cfg",
-                "input_param": "cfg"
-            }
-        ]
-    },
-    "test_vpred":{
-        "file":"test_vpred",
-        "node_mapping":[
-            {
-                "node_number": "2",
-                "node_property": "ckpt_name",
-                "input_param": "model"
-            },
-            {
-                "node_number": "4",
-                "node_property": "width",
-                "input_param": "width"
-            },
-            {
-                "node_number": "4",
-                "node_property": "height",
-                "input_param": "height"
             },
             {
                 "node_number": "6",
-                "node_property": "text",
-                "input_param": "prompt"
-            },
-            {
-                "node_number": "8",
-                "node_property": "seed",
-                "input_param": "random_seed"
-            },
-            {
-                "node_number": "8",
                 "node_property": "cfg",
                 "input_param": "cfg"
-            }
-        ]
-    },
-    "test_hires":{
-        "file":"test_hires",
-        "node_mapping":[
-            {
-                "node_number": "2",
-                "node_property": "ckpt_name",
-                "input_param": "model"
-            },
-            {
-                "node_number": "4",
-                "node_property": "width",
-                "input_param": "width"
-            },
-            {
-                "node_number": "4",
-                "node_property": "height",
-                "input_param": "height"
-            },
-            {
-                "node_number": "6",
-                "node_property": "text",
-                "input_param": "prompt"
-            },
-            {
-                "node_number": "8",
-                "node_property": "seed",
-                "input_param": "random_seed"
-            },
-            {
-                "node_number": "8",
-                "node_property": "cfg",
-                "input_param": "cfg"
-            },
-            {
-                "node_number": "57",
-                "node_property": "noise_seed",
-                "input_param": "random_seed"
-            }
-        ]
-    },
-    "test_hires_ad":{
-        "file":"test_hires_ad",
-        "node_mapping":[
-            {
-                "node_number": "2",
-                "node_property": "ckpt_name",
-                "input_param": "model"
-            },
-            {
-                "node_number": "4",
-                "node_property": "width",
-                "input_param": "width"
-            },
-            {
-                "node_number": "4",
-                "node_property": "height",
-                "input_param": "height"
-            },
-            {
-                "node_number": "6",
-                "node_property": "text",
-                "input_param": "prompt"
-            },
-            {
-                "node_number": "8",
-                "node_property": "seed",
-                "input_param": "random_seed"
-            },
-            {
-                "node_number": "8",
-                "node_property": "cfg",
-                "input_param": "cfg"
-            },
-            {
-                "node_number": "57",
-                "node_property": "noise_seed",
-                "input_param": "random_seed"
-            },
-            {
-                "node_number": "63",
-                "node_property": "seed",
-                "input_param": "random_seed"
-            }
-        ]
-    },
-    "test_depth":{
-        "file":"test_depth",
-        "node_mapping":[
-            {
-                "node_number": "2",
-                "node_property": "ckpt_name",
-                "input_param": "model"
-            },
-            {
-                "node_number": "6",
-                "node_property": "text",
-                "input_param": "prompt"
-            },
-            {
-                "node_number": "4",
-                "node_property": "width",
-                "input_param": "width"
-            },
-            {
-                "node_number": "4",
-                "node_property": "height",
-                "input_param": "height"
-            },
-            {
-                "node_number": "8",
-                "node_property": "cfg",
-                "input_param": "cfg"
-            },
-            {
-                "node_number": "8",
-                "node_property": "seed",
-                "input_param": "random_seed"
-            },
-            {
-                "node_number": "53",
-                "node_property": "image",
-                "input_param": "send_image"
             }
         ]
     }

@@ -1,18 +1,18 @@
 {
-  "2": {
+  "1": {
     "inputs": {
-      "ckpt_name": "oneObsession_07Noob.safetensors"
+      "ckpt_name": "oneObsession_13.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
       "title": "Checkpoint加载器（简易）"
     }
   },
-  "3": {
+  "2": {
     "inputs": {
       "stop_at_clip_layer": -2,
       "clip": [
-        "2",
+        "1",
         1
       ]
     },
@@ -21,7 +21,33 @@
       "title": "设置CLIP最后一层"
     }
   },
+  "3": {
+    "inputs": {
+      "text": "1girl",
+      "clip": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP文本编码"
+    }
+  },
   "4": {
+    "inputs": {
+      "text": "lowres, bad quality, low quality,worst quality,normal quality,text,signature,jpeg artifacts,bad anatomy, old, oldest, furry, early,copyright name,watermark,artist name,signature, mammal, anthro, ambiguous form, feral, semi-anthro,",
+      "clip": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP文本编码"
+    }
+  },
+  "5": {
     "inputs": {
       "width": 1024,
       "height": 1536,
@@ -34,82 +60,26 @@
   },
   "6": {
     "inputs": {
-      "text": "1girl",
-      "parser": "A1111",
-      "mean_normalization": true,
-      "multi_conditioning": true,
-      "use_old_emphasis_implementation": false,
-      "with_SDXL": false,
-      "ascore": 6.000000000000001,
-      "width": 1024,
-      "height": 1024,
-      "crop_w": 0,
-      "crop_h": 0,
-      "target_width": 1024,
-      "target_height": 1024,
-      "text_g": "",
-      "text_l": "",
-      "smZ_steps": 1,
-      "clip": [
-        "3",
-        0
-      ]
-    },
-    "class_type": "smZ CLIPTextEncode",
-    "_meta": {
-      "title": "CLIP Text Encode++"
-    }
-  },
-  "7": {
-    "inputs": {
-      "text": "lowres, bad quality, low quality,worst quality,normal quality,text,signature,jpeg artifacts,bad anatomy, old, oldest, furry, early,copyright name,watermark,artist name,signature, mammal, anthro, ambiguous form, feral, semi-anthro,",
-      "parser": "A1111",
-      "mean_normalization": true,
-      "multi_conditioning": true,
-      "use_old_emphasis_implementation": false,
-      "with_SDXL": false,
-      "ascore": 6.000000000000001,
-      "width": 1024,
-      "height": 1024,
-      "crop_w": 0,
-      "crop_h": 0,
-      "target_width": 1024,
-      "target_height": 1024,
-      "text_g": "",
-      "text_l": "",
-      "smZ_steps": 1,
-      "clip": [
-        "3",
-        0
-      ]
-    },
-    "class_type": "smZ CLIPTextEncode",
-    "_meta": {
-      "title": "CLIP Text Encode++"
-    }
-  },
-  "8": {
-    "inputs": {
-      "seed": 23412056359580,
-      "steps": 28,
+      "seed": 960945673552728,
+      "steps": 20,
       "cfg": 5,
       "sampler_name": "euler_ancestral",
       "scheduler": "normal",
       "denoise": 1,
       "model": [
-        "2",
+        "1",
         0
       ],
       "positive": [
-        "6",
+        "3",
         0
       ],
       "negative": [
-        "7",
+        "4",
         0
       ],
       "latent_image": [
-        "4",
+        "5",
         0
       ]
     },
@@ -118,14 +88,14 @@
       "title": "K采样器"
     }
   },
-  "9": {
+  "7": {
     "inputs": {
       "samples": [
-        "8",
+        "6",
         0
       ],
       "vae": [
-        "2",
+        "1",
         2
       ]
     },
@@ -134,11 +104,11 @@
       "title": "VAE解码"
     }
   },
-  "52": {
+  "8": {
     "inputs": {
       "filename_prefix": "ComfyUI",
       "images": [
-        "9",
+        "7",
         0
       ]
     },

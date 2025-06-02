@@ -61,14 +61,14 @@ def dynamic_params(param_configs):
         return func
     return decorator
 
-@register("test", "sbmikoto", "小雪", "0.0.3", "local")
+@register("astrbot_plugin_xiaoxue", "sbmikoto", "让LLM通过正常聊天的方式调用Comfyui进行画图", "0.0.4")
 class MyPlugin(Star):
   def __init__(self, context: Context):
     super().__init__(context)
 
-  @filter.llm_tool(name="generate_image_test")
+  @filter.llm_tool(name="generate_image")
   @dynamic_params(get_config_section("parameters"))
-  async def generate_image_test(self, event: AstrMessageEvent, **kwargs) -> MessageEventResult:
+  async def generate_image(self, event: AstrMessageEvent, **kwargs) -> MessageEventResult:
     '''根据用户需求生成图片, 通过上下文判断用户需要图片生成的时候调用。
 
     Args:
@@ -110,6 +110,7 @@ class MyPlugin(Star):
 
   @filter.event_message_type(filter.EventMessageType.ALL)
   async def save_upload_image(self, event: AstrMessageEvent):
+    """ 在开启图生图功能之后，会储存用户发的图片URL """
     if not system_i_t_i:
        return
     

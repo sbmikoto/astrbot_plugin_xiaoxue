@@ -1,0 +1,5 @@
+name: astrbot_plugin_xiaoxue
+desc: 让LLM通过正常聊天的方式调用Comfyui进行画图
+version: v0.0.4
+author: sbmikoto
+repo: https://github.com/sbmikoto/astrbot_plugin_xiaoxue
