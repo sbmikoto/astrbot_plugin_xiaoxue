@@ -16,7 +16,7 @@ class Call_Comfy:
     OUTPUT_IMAGE_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data/output")
     DEFAULT_WORKFLOW = get_config_section('comfy').get('default_workflow')
 
-    async def generate_image(self, info, astr_self, unified_msg_origin):
+    async def generate_image(self, info, astr_self, event, unified_msg_origin):
         image_url = info.get("send_image")
         if image_url:
             image_filename = info.get("send_image_key") + ".png"
@@ -46,7 +46,11 @@ class Call_Comfy:
                             complete_msg = complete_msg + value + str(info_value) + "\n"
 
         message_chain = MessageChain().message(complete_msg).file_image(image_file)
-        await astr_self.context.send_message(unified_msg_origin, message_chain)
+        try:
+            await astr_self.context.send_message(unified_msg_origin, message_chain)
+        except NotImplementedError as e:
+            await event.send(message_chain)
+
 
     async def upload_image(self, image_url, filename):
         image_content = None

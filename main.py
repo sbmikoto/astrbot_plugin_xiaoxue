@@ -103,7 +103,7 @@ class MyPlugin(Star):
     if not skipflg:
       info = {**default_info, **kwargs}
 
-      asyncio.create_task(Call_Comfy().generate_image(info, self, event.unified_msg_origin))
+      asyncio.create_task(Call_Comfy().generate_image(info, self, event, event.unified_msg_origin))
       yield event.plain_result(start_message)
       return_to_llm = "告诉用户正在画图中"
       yield return_to_llm
