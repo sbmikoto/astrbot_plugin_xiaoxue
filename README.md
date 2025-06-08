@@ -32,5 +32,8 @@ sample文件夹下有更复杂的配置例子。(sample中的工作流有使用c
   需要随机数请设定input_param为<span style="color:red">random_seed</span>  
   开启图生图之后，需要绑定图片请使用<span style="color:red">send_image</span>
 
+## 更新履历
+0.0.4 发布版
+0.0.5 追加comfy服务器关闭的时候，AI会提示关闭
 ## 求助
 遇到问题请发issue，或者加群752960286

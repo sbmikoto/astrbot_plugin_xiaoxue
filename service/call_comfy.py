@@ -6,6 +6,7 @@ import io
 import ssl
 import certifi
 from astrbot.api.event import MessageChain
+from astrbot import logger
 from ..utils.utils import get_workflow_settings, create_workflow, get_config_section, evaluate_custom_rule
 
 class Call_Comfy:
@@ -165,6 +166,16 @@ class Call_Comfy:
                 if response.status == 200:
                     return await response.read()
 
+    async def check_status(self):
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f"{self.SERVER_URL}/system_stats", timeout=5) as response:
+                    if response.status == 200:
+                        return True
+                    else:
+                        return False
+        except Exception as e:
+            return False
 
     async def track_progress_and_get_images(self, prompt_id):
 

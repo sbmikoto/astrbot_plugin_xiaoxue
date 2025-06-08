@@ -3,6 +3,7 @@ from astrbot.api.star import Context, Star, register
 import asyncio
 import inspect
 from .service.call_comfy import Call_Comfy
+from astrbot import logger
 from .utils.utils import get_config_section, save_to_image_session, get_from_image_session
 
 start_message = get_config_section("messages").get("start_message", "开始画图")
@@ -61,7 +62,7 @@ def dynamic_params(param_configs):
         return func
     return decorator
 
-@register("astrbot_plugin_xiaoxue", "sbmikoto", "让LLM通过正常聊天的方式调用Comfyui进行画图", "0.0.4")
+@register("astrbot_plugin_xiaoxue", "sbmikoto", "让LLM通过正常聊天的方式调用Comfyui进行画图", "0.0.5")
 class MyPlugin(Star):
   def __init__(self, context: Context):
     super().__init__(context)
@@ -103,10 +104,16 @@ class MyPlugin(Star):
     if not skipflg:
       info = {**default_info, **kwargs}
 
-      asyncio.create_task(Call_Comfy().generate_image(info, self, event.unified_msg_origin))
-      yield event.plain_result(start_message)
-      return_to_llm = "告诉用户正在画图中"
-      yield return_to_llm
+      # 检查comfy的状态
+      cc = Call_Comfy()
+      check_result = await cc.check_status()
+      if check_result:
+        asyncio.create_task(cc.generate_image(info, self, event.unified_msg_origin))
+        yield event.plain_result(start_message)
+        return_to_llm = "告诉用户正在画图中"
+        yield return_to_llm
+      else:
+         yield "画图服务器关闭，回复用户现在不能画图"
 
   @filter.event_message_type(filter.EventMessageType.ALL)
   async def save_upload_image(self, event: AstrMessageEvent):
